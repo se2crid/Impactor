@@ -21,6 +21,8 @@ use windows::login_window;
 static REFRESH_DAEMON_DEVICES: std::sync::OnceLock<crate::refresh::ConnectedDevices> =
     std::sync::OnceLock::new();
 
+const TOP_BAR_CONTROL_HEIGHT: f32 = 27.0;
+
 pub fn set_refresh_daemon_devices(devices: crate::refresh::ConnectedDevices) {
     let _ = REFRESH_DAEMON_DEVICES.set(devices);
 }
@@ -794,7 +796,8 @@ impl Impactor {
             button(appearance::icon(appearance::GEAR))
                 .style(appearance::s_button)
                 .on_press(Message::NavigateToScreen(ImpactorScreenType::Settings))
-        };
+        }
+        .height(TOP_BAR_CONTROL_HEIGHT);
 
         container(
             row![
@@ -806,6 +809,7 @@ impl Impactor {
                 )
                 .style(appearance::s_pick_list)
                 .placeholder(placeholder_str)
+                .padding([5.0, 10.0])
                 .width(250),
                 right_button
             ]

@@ -6,6 +6,8 @@ use plume_store::AccountStore;
 
 use crate::appearance;
 
+const ACCOUNT_ACTION_BUTTON_WIDTH: f32 = 165.0;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Team {
     pub name: String,
@@ -172,6 +174,7 @@ impl SettingsScreen {
             button(appearance::icon_text(appearance::PLUS, "Add Account", None))
                 .on_press(Message::ShowLogin)
                 .style(appearance::s_button)
+                .width(ACCOUNT_ACTION_BUTTON_WIDTH)
         ]
         .spacing(appearance::THEME_PADDING);
 
@@ -184,12 +187,14 @@ impl SettingsScreen {
                         None,
                     ))
                     .on_press(Message::RemoveAccount(index))
-                    .style(appearance::s_button),
+                    .style(appearance::s_button)
+                    .width(ACCOUNT_ACTION_BUTTON_WIDTH),
                 )
                 .push(
                     button(appearance::icon_text(appearance::SHARE, "Export P12", None))
                         .on_press(Message::ExportP12)
-                        .style(appearance::s_button),
+                        .style(appearance::s_button)
+                        .width(ACCOUNT_ACTION_BUTTON_WIDTH),
                 );
         }
 

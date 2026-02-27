@@ -9,6 +9,7 @@ use crate::appearance;
 
 const IOS_RADIUS_RATIO: f32 = 0.2237;
 const ICON_MASK_AA_SOFTNESS: f32 = 0.7;
+const SMALL_ACTION_BUTTON_SIZE: f32 = 30.0;
 
 fn apply_ios_icon_mask(img: &mut ::image::RgbaImage) {
     let w = img.width() as f32;
@@ -368,10 +369,12 @@ impl PackageScreen {
             row![
                 button(appearance::icon_text(appearance::PLUS, "Add Tweak", None))
                     .on_press(Message::AddTweak)
-                    .style(appearance::s_button),
+                    .style(appearance::s_button)
+                    .width(Fill),
                 button(appearance::icon_text(appearance::PLUS, "Add Bundle", None))
                     .on_press(Message::AddBundle)
-                    .style(appearance::s_button),
+                    .style(appearance::s_button)
+                    .width(Fill),
             ]
             .spacing(8),
         ]
@@ -418,6 +421,7 @@ impl PackageScreen {
                 Message::UpdateInstallMode
             )
             .style(appearance::s_pick_list)
+            .width(Fill)
             .placeholder("Select mode"),
             text("Signing:").size(12),
             pick_list(
@@ -426,6 +430,7 @@ impl PackageScreen {
                 Message::UpdateSignerMode
             )
             .style(appearance::s_pick_list)
+            .width(Fill)
             .placeholder("Select signing method"),
         ]
         .spacing(8)
@@ -485,14 +490,17 @@ impl PackageScreen {
             text(ent_name).size(12).width(Fill).color(label_color),
             button(appearance::icon(appearance::PLUS))
                 .on_press_maybe(enabled.then_some(Message::SetCustomEntitlements))
-                .style(appearance::s_button),
+                .style(appearance::s_button)
+                .width(SMALL_ACTION_BUTTON_SIZE)
+                .height(SMALL_ACTION_BUTTON_SIZE),
             button(appearance::icon(appearance::MINUS))
                 .on_press_maybe(
                     (enabled && self.options.custom_entitlements.is_some())
                         .then_some(Message::ClearCustomEntitlements)
                 )
                 .style(appearance::s_button)
-                .padding(6),
+                .width(SMALL_ACTION_BUTTON_SIZE)
+                .height(SMALL_ACTION_BUTTON_SIZE),
         ]
         .spacing(8)
         .align_y(Alignment::Center)

@@ -34,7 +34,11 @@ pub(crate) fn icon_text<M: 'static>(
 
     let mut icon_text_widget = Text::new(icon)
         .font(icon_font)
-        .width(Fixed(THEME_ICON_SIZE));
+        .size(THEME_ICON_SIZE)
+        .line_height(1.0)
+        .width(Fixed(THEME_ICON_SIZE))
+        .height(Fixed(THEME_ICON_SIZE))
+        .center();
     if let Some(c) = color {
         icon_text_widget = icon_text_widget.color(c);
     }
@@ -59,6 +63,9 @@ pub(crate) fn icon(icon: &'static str) -> Text<'static> {
 
     Text::new(icon)
         .font(icon_font)
-        .align_x(Center)
+        .size(THEME_ICON_SIZE)
+        .line_height(1.0)
         .width(Fixed(THEME_ICON_SIZE))
+        .height(Fixed(THEME_ICON_SIZE))
+        .center()
 }
