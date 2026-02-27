@@ -7,6 +7,68 @@ use std::path::PathBuf;
 
 use crate::appearance;
 
+const IOS_RADIUS_RATIO: f32 = 0.2237;
+const ICON_MASK_AA_SOFTNESS: f32 = 0.7;
+
+fn apply_ios_icon_mask(img: &mut ::image::RgbaImage) {
+    let w = img.width() as f32;
+    let h = img.height() as f32;
+    let r = w.min(h) * IOS_RADIUS_RATIO;
+
+    for y in 0..img.height() {
+        for x in 0..img.width() {
+            let alpha = rounded_rect_coverage(x as f32 + 0.5, y as f32 + 0.5, w, h, r);
+            if alpha < 1.0 {
+                let px = img.get_pixel_mut(x, y);
+                px[3] = (px[3] as f32 * alpha).round() as u8;
+            }
+        }
+    }
+}
+
+fn rounded_rect_coverage(px: f32, py: f32, w: f32, h: f32, r: f32) -> f32 {
+    let dx = if px < r {
+        r - px
+    } else if px > w - r {
+        px - (w - r)
+    } else {
+        0.0
+    };
+    let dy = if py < r {
+        r - py
+    } else if py > h - r {
+        py - (h - r)
+    } else {
+        0.0
+    };
+
+    if dx <= 0.0 && dy <= 0.0 {
+        return 1.0;
+    }
+
+    let dist = (dx * dx + dy * dy).sqrt();
+    if dist >= r + ICON_MASK_AA_SOFTNESS {
+        0.0
+    } else if dist <= r - ICON_MASK_AA_SOFTNESS {
+        1.0
+    } else {
+        ((r - dist) / (ICON_MASK_AA_SOFTNESS * 2.0) + 0.5).clamp(0.0, 1.0)
+    }
+}
+
+fn masked_handle_from_bytes(data: &[u8]) -> Option<image::Handle> {
+    let dyn_img = ::image::load_from_memory(data).ok()?;
+    let mut rgba = dyn_img.to_rgba8();
+    apply_ios_icon_mask(&mut rgba);
+    let (w, h) = (rgba.width(), rgba.height());
+    Some(image::Handle::from_rgba(w, h, rgba.into_raw()))
+}
+
+fn masked_handle_from_path(path: &std::path::Path) -> Option<image::Handle> {
+    let data = std::fs::read(path).ok()?;
+    masked_handle_from_bytes(&data)
+}
+
 #[derive(Debug, Clone)]
 pub enum Message {
     UpdateCustomName(String),
@@ -48,12 +110,12 @@ impl PackageScreen {
         let package_icon_handle = package
             .as_ref()
             .and_then(|p| p.app_icon_data.as_ref())
-            .map(|data| image::Handle::from_bytes(data.clone()));
+            .and_then(|data| masked_handle_from_bytes(data));
 
         let custom_icon_path = options.custom_icon.clone();
         let custom_icon_handle = custom_icon_path
             .as_ref()
-            .map(|path| image::Handle::from_path(path.clone()));
+            .and_then(|path| masked_handle_from_path(path));
 
         Self {
             selected_package: package,
@@ -202,7 +264,7 @@ impl PackageScreen {
                 if let Some(path) = path {
                     self.options.custom_icon = Some(path.clone());
                     self.custom_icon_path = Some(path.clone());
-                    self.custom_icon_handle = Some(image::Handle::from_path(path));
+                    self.custom_icon_handle = masked_handle_from_path(&path);
                 }
 
                 Task::none()
@@ -451,19 +513,13 @@ impl PackageScreen {
         let preview: Element<'_, Message> = if let Some(handle) = &self.custom_icon_handle {
             stack![
                 loading_indicator,
-                image(handle.clone())
-                    .width(ICON_SIZE)
-                    .height(ICON_SIZE)
-                    .border_radius(appearance::THEME_CORNER_RADIUS)
+                image(handle.clone()).width(ICON_SIZE).height(ICON_SIZE)
             ]
             .into()
         } else if let Some(handle) = &self.package_icon_handle {
             stack![
                 loading_indicator,
-                image(handle.clone())
-                    .width(ICON_SIZE)
-                    .height(ICON_SIZE)
-                    .border_radius(appearance::THEME_CORNER_RADIUS)
+                image(handle.clone()).width(ICON_SIZE).height(ICON_SIZE)
             ]
             .into()
         } else {
@@ -483,7 +539,7 @@ impl PackageScreen {
 
         button(preview)
             .on_press(on_press)
-            .style(appearance::s_button)
+            .style(appearance::icon_button)
             .padding(0)
             .into()
     }

@@ -108,3 +108,27 @@ pub fn s_button(theme: &Theme, status: button::Status) -> button::Style {
         },
     }
 }
+
+pub fn icon_button(theme: &Theme, status: button::Status) -> button::Style {
+    let palette = theme.palette();
+    let hover = lighten(palette.background, 0.08).scale_alpha(0.22);
+    let pressed = lighten(palette.background, 0.12).scale_alpha(0.3);
+    let style = |background, text_color| button::Style {
+        background,
+        text_color,
+        border: Border {
+            color: Color::TRANSPARENT,
+            width: 0.0,
+            radius: 16.0.into(),
+        },
+        shadow: Shadow::default(),
+        snap: false,
+    };
+
+    match status {
+        button::Status::Active => style(None, palette.text),
+        button::Status::Hovered => style(Some(Background::Color(hover)), palette.text),
+        button::Status::Pressed => style(Some(Background::Color(pressed)), palette.text),
+        button::Status::Disabled => style(None, palette.text.scale_alpha(0.5)),
+    }
+}

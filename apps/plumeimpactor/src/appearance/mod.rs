@@ -4,7 +4,7 @@ mod button;
 mod fonts;
 mod picklist;
 
-pub(crate) use button::{p_button, s_button};
+pub(crate) use button::{icon_button, p_button, s_button};
 #[allow(unused)]
 pub(crate) use fonts::{
     CHEVRON_BACK, DOWNLOAD, FILE, GEAR, MINUS, PLUS, SHARE, STAR, WRENCH, icon, icon_text,
