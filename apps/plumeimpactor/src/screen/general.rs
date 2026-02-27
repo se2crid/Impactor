@@ -89,7 +89,7 @@ impl GeneralScreen {
         let footer_links = button(appearance::icon_text(
             appearance::STAR,
             "Star us on GitHub!",
-            Some(Color::from_rgb(1.0, 0.75, 0.8)),
+            Some(Color::from_rgb(0.91, 0.54, 0.67)),
         ))
         .on_press(Message::OpenGitHub)
         .style(iced::widget::button::text);

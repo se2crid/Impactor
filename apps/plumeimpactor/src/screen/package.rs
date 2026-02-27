@@ -414,9 +414,9 @@ impl PackageScreen {
             .unwrap_or("No entitlements file");
 
         let label_color = if enabled {
-            iced::Color::WHITE
+            iced::Color::from_rgb(0.91, 0.91, 0.91)
         } else {
-            iced::Color::from_rgb(0.5, 0.5, 0.5)
+            iced::Color::from_rgb(0.4, 0.4, 0.4)
         };
 
         row![

@@ -12,10 +12,10 @@ pub(crate) use fonts::{
 };
 pub(crate) use picklist::s_pick_list;
 
-pub(crate) const THEME_CORNER_RADIUS: f32 = 4.0;
-pub(crate) const THEME_FONT_SIZE: f32 = 12.0;
-pub(crate) const THEME_PADDING: f32 = 9.0;
-pub(crate) const THEME_ICON_SIZE: f32 = 12.0;
+pub(crate) const THEME_CORNER_RADIUS: f32 = 6.0;
+pub(crate) const THEME_FONT_SIZE: f32 = 13.0;
+pub(crate) const THEME_PADDING: f32 = 10.0;
+pub(crate) const THEME_ICON_SIZE: f32 = 13.0;
 
 pub(crate) fn p_font() -> iced::Font {
     iced::Font {
@@ -40,12 +40,12 @@ impl PlumeTheme {
         Theme::custom(
             "Plume Dark".to_string(),
             iced::theme::Palette {
-                background: color!(0x282021),
-                text: color!(0xf2d5cf),
-                primary: color!(0xd3869b),
-                success: color!(0xd9a6b3),
-                danger: color!(0xe78a8a),
-                warning: color!(0xf4b8c4),
+                background: color!(0x1a1a1a),
+                text: color!(0xe8e8e8),
+                primary: color!(0xe88aab),
+                success: color!(0xd4a0b0),
+                danger: color!(0xe06070),
+                warning: color!(0xf0a0b0),
             },
         )
     }
