@@ -86,11 +86,21 @@ impl GeneralScreen {
         .spacing(10)
         .align_x(Center);
 
-        let footer_links = button(appearance::icon_text(
-            appearance::STAR,
-            "Star us on GitHub!",
-            Some(Color::from_rgb(0.91, 0.54, 0.67)),
-        ))
+        let footer_links = button(
+            row![
+                appearance::icon(appearance::STAR).style(|theme: &iced::Theme| {
+                    iced::widget::text::Style {
+                        color: Some(theme.palette().primary),
+                    }
+                }),
+                text("Star us on GitHub!").style(|theme: &iced::Theme| {
+                    iced::widget::text::Style {
+                        color: Some(theme.palette().primary),
+                    }
+                })
+            ]
+            .spacing(10),
+        )
         .on_press(Message::OpenGitHub)
         .style(iced::widget::button::text);
 

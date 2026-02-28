@@ -69,3 +69,17 @@ pub fn get_data_path() -> PathBuf {
 
     dir
 }
+
+pub(crate) fn load_accent_color() -> appearance::AccentColor {
+    fs::read_to_string(get_data_path().join("accent_color.txt"))
+        .ok()
+        .and_then(|value| value.parse().ok())
+        .unwrap_or_default()
+}
+
+pub(crate) fn save_accent_color(accent_color: appearance::AccentColor) -> std::io::Result<()> {
+    fs::write(
+        get_data_path().join("accent_color.txt"),
+        accent_color.to_hex(),
+    )
+}

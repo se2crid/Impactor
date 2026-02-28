@@ -30,6 +30,10 @@ pub enum Message {
     FetchTeams(String),
     TeamsLoaded(String, Vec<Team>),
     ToggleAutoStart(bool),
+    RequestAccentColorPicker,
+    OpenAccentColorPicker,
+    AccentColorPicked(Option<appearance::AccentColor>),
+    ResetAccentColor,
 }
 
 #[derive(Debug)]
@@ -63,7 +67,12 @@ impl SettingsScreen {
         }
     }
 
-    pub fn view<'a>(&'a self, account_store: &'a Option<AccountStore>) -> Element<'a, Message> {
+    pub fn view<'a>(
+        &'a self,
+        account_store: &'a Option<AccountStore>,
+        accent_color: appearance::AccentColor,
+        accent_picker_open: bool,
+    ) -> Element<'a, Message> {
         let Some(store) = account_store else {
             return column![text("Loading accounts...")]
                 .spacing(appearance::THEME_PADDING)
@@ -156,10 +165,56 @@ impl SettingsScreen {
         }
 
         let auto_start_enabled = crate::startup::auto_start_enabled();
+        content = content.push(self.view_accent_picker(accent_color, accent_picker_open));
         content = content.push(self.view_auto_start_toggle(auto_start_enabled));
         content = content.push(self.view_account_buttons(selected_index));
 
         content.into()
+    }
+
+    fn view_accent_picker(
+        &self,
+        accent_color: appearance::AccentColor,
+        accent_picker_open: bool,
+    ) -> Element<'_, Message> {
+        let preview_color = accent_color.primary();
+        row![
+            button(text(""))
+                .on_press_maybe((!accent_picker_open).then_some(Message::RequestAccentColorPicker))
+                .width(42)
+                .height(26)
+                .style(move |_theme: &iced::Theme, status| {
+                    let border_color = match status {
+                        iced::widget::button::Status::Hovered => preview_color.scale_alpha(1.0),
+                        iced::widget::button::Status::Pressed => preview_color.scale_alpha(0.75),
+                        iced::widget::button::Status::Disabled => preview_color.scale_alpha(0.35),
+                        iced::widget::button::Status::Active => preview_color.scale_alpha(0.85),
+                    };
+
+                    iced::widget::button::Style {
+                        background: Some(iced::Background::Color(preview_color)),
+                        text_color: iced::Color::TRANSPARENT,
+                        border: iced::Border {
+                            width: 1.0,
+                            color: border_color,
+                            radius: appearance::THEME_CORNER_RADIUS.into(),
+                        },
+                        shadow: iced::Shadow::default(),
+                        snap: false,
+                    }
+                }),
+            text("Color Picker")
+                .size(appearance::THEME_FONT_SIZE - 1.0)
+                .style(|theme: &iced::Theme| iced::widget::text::Style {
+                    color: Some(theme.palette().text.scale_alpha(0.72)),
+                }),
+            button(text("Reset"))
+                .on_press(Message::ResetAccentColor)
+                .style(appearance::s_button)
+        ]
+        .spacing(appearance::THEME_PADDING)
+        .align_y(Alignment::Center)
+        .into()
     }
 
     fn view_auto_start_toggle(&self, auto_start_enabled: bool) -> Element<'_, Message> {
