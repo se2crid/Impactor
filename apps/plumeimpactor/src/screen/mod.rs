@@ -88,7 +88,6 @@ pub struct Impactor {
     main_window: Option<window::Id>,
     account_store: Option<AccountStore>,
     accent_color: appearance::AccentColor,
-    accent_picker_open: bool,
     login_windows: std::collections::HashMap<window::Id, login_window::LoginWindow>,
     pending_installation: bool,
 }
@@ -136,7 +135,6 @@ impl Impactor {
                 main_window,
                 account_store: Some(store),
                 accent_color,
-                accent_picker_open: false,
                 login_windows: std::collections::HashMap::new(),
                 pending_installation: false,
             },
@@ -465,59 +463,10 @@ impl Impactor {
                             }
                             Task::none()
                         }
-                        settings::Message::RequestAccentColorPicker => {
-                            if self.accent_picker_open {
-                                return Task::none();
-                            }
-
-                            self.accent_picker_open = true;
-
-                            Task::perform(async {}, |_| {
-                                Message::SettingsScreen(settings::Message::OpenAccentColorPicker)
-                            })
-                        }
-                        settings::Message::OpenAccentColorPicker => {
-                            let current_accent = self.accent_color;
-
-                            Task::perform(
-                                async move {
-                                    let (tx, rx) = std::sync::mpsc::channel();
-
-                                    std::thread::spawn(move || {
-                                        let default_rgb = [
-                                            current_accent.red(),
-                                            current_accent.green(),
-                                            current_accent.blue(),
-                                        ];
-
-                                        let picked = tinyfiledialogs::color_chooser_dialog(
-                                            "Choose Accent Color",
-                                            tinyfiledialogs::DefaultColorValue::RGB(&default_rgb),
-                                        )
-                                        .map(|(_, rgb)| {
-                                            appearance::AccentColor::new(rgb[0], rgb[1], rgb[2])
-                                        });
-
-                                        let _ = tx.send(picked);
-                                    });
-
-                                    rx.recv().ok().flatten()
-                                },
-                                |accent| {
-                                    Message::SettingsScreen(settings::Message::AccentColorPicked(
-                                        accent,
-                                    ))
-                                },
-                            )
-                        }
-                        settings::Message::AccentColorPicked(accent) => {
-                            self.accent_picker_open = false;
-
-                            if let Some(accent_color) = accent {
-                                self.accent_color = accent_color;
-                                if let Err(err) = defaults::save_accent_color(self.accent_color) {
-                                    log::error!("Failed to save accent color: {err}");
-                                }
+                        settings::Message::AccentColorPicked(accent_color) => {
+                            self.accent_color = accent_color;
+                            if let Err(err) = defaults::save_accent_color(self.accent_color) {
+                                log::error!("Failed to save accent color: {err}");
                             }
 
                             Task::none()
@@ -840,11 +789,7 @@ impl Impactor {
             ImpactorScreen::Main(screen) => screen.view().map(Message::MainScreen),
             ImpactorScreen::Utilities(screen) => screen.view().map(Message::UtilitiesScreen),
             ImpactorScreen::Settings(screen) => screen
-                .view(
-                    &self.account_store,
-                    self.accent_color,
-                    self.accent_picker_open,
-                )
+                .view(&self.account_store, self.accent_color)
                 .map(Message::SettingsScreen),
             ImpactorScreen::Installer(screen) => {
                 screen.view(has_device).map(Message::InstallerScreen)
